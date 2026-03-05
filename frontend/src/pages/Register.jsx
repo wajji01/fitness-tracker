@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_BASE } from "../config/api";
 
 const fields = [
   {
@@ -78,7 +79,7 @@ export default function Register() {
       formData.append("email", form.email);
       formData.append("password", form.password);
       if (profileFile) formData.append("profilePicture", profileFile);
-      await axios.post("http://localhost:5000/api/auth/register", formData, {
+      await axios.post(`${API_BASE}/api/auth/register`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setSuccess(true);
