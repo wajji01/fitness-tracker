@@ -1,19 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_BASE, BACKEND_URL, authHeaders, getAvatarUrl } from "../config/api";
 
-const BASE    = "http://localhost:5000/api";
-const BACKEND = "http://localhost:5000";
-
-function getAvatarUrl(path) {
-  if (!path) return "";
-  if (path.startsWith("http")) return path;
-  return `${BACKEND}${path}`;
-}
-
-function authHeaders() {
-  return { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } };
-}
+const BASE    = `${API_BASE}/api`;
+const BACKEND = BACKEND_URL;
 
 // ── Reusable Components ────────────────────────────────────────────────────────
 function SectionCard({ title, description, icon, children }) {
