@@ -16,14 +16,14 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<DashboardLayout />} />
-        {/* <Route
+        {/* <Route path="/dashboard" element={<DashboardLayout />} /> */}
+        <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
               <DashboardLayout />
             </ProtectedRoute>
-          } */}
+          }
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
