@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Landing from "./pages/Landing";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
+import Landing         from "./pages/Landing";
+import Login           from "./pages/Login";
+import Register        from "./pages/Register";
+import DashboardLayout from "./pages/dashboard";
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = Boolean(localStorage.getItem("token"));
@@ -16,13 +16,14 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route
+        <Route path="/dashboard" element={<DashboardLayout />} />
+        {/* <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <DashboardLayout />
             </ProtectedRoute>
-          }
+          } */}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
