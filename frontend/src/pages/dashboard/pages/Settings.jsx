@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { API_BASE, BACKEND_URL, authHeaders, getAvatarUrl } from "../config/api";
+import { API_BASE, BACKEND_URL, authHeaders, getAvatarUrl } from "../../../config/api";
 
 const BASE    = `${API_BASE}/api`;
 const BACKEND = BACKEND_URL;
