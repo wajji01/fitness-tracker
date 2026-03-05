@@ -1,26 +1,34 @@
-const express = require("express");
-const cors = require("cors");
-const path = require("path");
-
-// Load .env FIRST — before anything else
 require("dotenv").config();
+const express = require("express");
+const cors    = require("cors");
+const path    = require("path");
 
-// Fallback agar .env se load na ho
+// ── JWT fallback ──────────────────────────────────────────────────────────────
 if (!process.env.JWT_SECRET) {
   process.env.JWT_SECRET = "fittrack_fallback_secret_key_2024";
   console.warn("⚠️  JWT_SECRET not found in .env — using fallback");
 }
 
 const connectDB = require("./config/db");
-
-// Connect to MongoDB Atlas
 connectDB();
 
 const app = express();
 
-// ── Middleware ────────────────────────────────────────────────────────────────
+// ── CORS ──────────────────────────────────────────────────────────────────────
+// Add your Vercel frontend URL in FRONTEND_URL env variable
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  process.env.FRONTEND_URL,         // e.g. https://fitness-tracker.vercel.app
+].filter(Boolean);
+
 app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:3000"],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error(`CORS blocked: ${origin}`));
+  },
   credentials: true,
 }));
 
@@ -31,14 +39,14 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // ── Routes ────────────────────────────────────────────────────────────────────
 const authRoutes = require("./routes/authRoutes");
 app.use("/api/auth", authRoutes);
-app.use("/api", authRoutes);
+app.use("/api",      authRoutes);
 
 // ── Health Check ──────────────────────────────────────────────────────────────
 app.get("/", (req, res) => {
   res.json({ message: "🏋️ Fitness Tracker API is running!" });
 });
 
-// ── 404 Handler ───────────────────────────────────────────────────────────────
+// ── 404 ───────────────────────────────────────────────────────────────────────
 app.use((req, res) => {
   res.status(404).json({ message: `Route ${req.originalUrl} not found` });
 });
@@ -49,9 +57,10 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ message: err.message || "Internal server error" });
 });
 
-// ── Start Server ──────────────────────────────────────────────────────────────
+// ── Start ─────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`🔑 JWT_SECRET loaded: ${process.env.JWT_SECRET ? "✅ YES" : "❌ NO"}`);
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🔑 JWT_SECRET: ${process.env.JWT_SECRET ? "✅ YES" : "❌ NO"}`);
+  console.log(`🌐 Allowed origins:`, allowedOrigins);
 });

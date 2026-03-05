@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_BASE } from "../config/api";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ export default function Login() {
     setLoading(true);
     setError("");
     try {
-      const { data } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
+      const { data } = await axios.post(`${API_BASE}/api/auth/login`, {
         email: form.email,
         password: form.password,
       });
@@ -88,13 +89,8 @@ export default function Login() {
                   </svg>
                 </div>
                 <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  placeholder="you@example.com"
+                  id="email" name="email" type="email" autoComplete="email"
+                  value={form.email} onChange={handleChange} placeholder="you@example.com"
                   className={`w-full pl-10 pr-4 py-3 text-sm rounded-xl border transition-colors outline-none ${
                     error
                       ? "border-red-200 bg-red-50 focus:border-red-400 focus:ring-2 focus:ring-red-100"
@@ -107,12 +103,8 @@ export default function Login() {
             {/* Password */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
-                  Password
-                </label>
-                <a href="#" className="text-xs font-medium text-violet-600 hover:text-violet-700 transition-colors">
-                  Forgot password?
-                </a>
+                <label htmlFor="password" className="block text-sm font-semibold text-gray-700">Password</label>
+                <a href="#" className="text-xs font-medium text-violet-600 hover:text-violet-700 transition-colors">Forgot password?</a>
               </div>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
@@ -121,12 +113,8 @@ export default function Login() {
                   </svg>
                 </div>
                 <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
-                  value={form.password}
-                  onChange={handleChange}
+                  id="password" name="password" type={showPassword ? "text" : "password"}
+                  autoComplete="current-password" value={form.password} onChange={handleChange}
                   placeholder="••••••••"
                   className={`w-full pl-10 pr-11 py-3 text-sm rounded-xl border transition-colors outline-none ${
                     error
@@ -134,11 +122,8 @@ export default function Login() {
                       : "border-gray-200 bg-gray-50 focus:border-violet-400 focus:ring-2 focus:ring-violet-100 focus:bg-white"
                   }`}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
-                >
+                <button type="button" onClick={() => setShowPassword((v) => !v)}
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
                   {showPassword ? (
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
@@ -154,11 +139,8 @@ export default function Login() {
             </div>
 
             {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 disabled:opacity-70 disabled:cursor-not-allowed text-white font-semibold text-sm px-6 py-3.5 rounded-xl transition-all shadow-lg shadow-violet-200 hover:shadow-violet-300 hover:-translate-y-0.5 active:translate-y-0 mt-2"
-            >
+            <button type="submit" disabled={loading}
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 disabled:opacity-70 disabled:cursor-not-allowed text-white font-semibold text-sm px-6 py-3.5 rounded-xl transition-all shadow-lg shadow-violet-200 hover:shadow-violet-300 hover:-translate-y-0.5 active:translate-y-0 mt-2">
               {loading ? (
                 <>
                   <svg className="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
