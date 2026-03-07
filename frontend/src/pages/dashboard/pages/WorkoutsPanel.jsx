@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import { API_BASE, authHeaders } from "../../../config/api";
 
-const API = "http://localhost:5000/api/workouts";
+const API = `${API_BASE}/api/workouts`;
 const CATEGORIES = ["Strength", "Cardio"];
 const emptyForm = { exercise: "", sets: "", reps: "", weight: "", category: "Strength", notes: "" };
 
@@ -12,9 +13,6 @@ const categoryStyles = {
   HIIT:        "bg-orange-100 text-orange-700",
 };
 
-function authHeaders() {
-  return { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } };
-}
 
 // ── Modal ──────────────────────────────────────────────────────────────────────
 function Modal({ title, onClose, children }) {
@@ -59,30 +57,58 @@ function WorkoutForm({ initial, onSubmit, onCancel, loading }) {
     onSubmit({ ...form, sets: +form.sets, reps: +form.reps, weight: form.weight === "" ? null : +form.weight });
   };
 
-  const Field = ({ label, name, type = "text", placeholder, required }) => (
-    <div>
-      <label className="block text-xs font-semibold text-gray-600 mb-1">
-        {label}{required && <span className="text-red-400 ml-0.5">*</span>}
-      </label>
-      <input
-        type={type} value={form[name]} onChange={e => set(name, e.target.value)} placeholder={placeholder}
-        className={`w-full px-3 py-2.5 text-sm rounded-xl border outline-none transition-colors ${
-          errors[name]
-            ? "border-red-200 bg-red-50"
-            : "border-gray-200 bg-gray-50 focus:border-violet-400 focus:ring-2 focus:ring-violet-100 focus:bg-white"
-        }`}
-      />
-      {errors[name] && <p className="mt-1 text-xs text-red-500">{errors[name]}</p>}
-    </div>
-  );
+  // ── Inline field styles helper (no nested component — avoids focus loss) ──
+  const inputCls = (name) =>
+    `w-full px-3 py-2.5 text-sm rounded-xl border outline-none transition-colors ${
+      errors[name]
+        ? "border-red-200 bg-red-50"
+        : "border-gray-200 bg-gray-50 focus:border-violet-400 focus:ring-2 focus:ring-violet-100 focus:bg-white"
+    }`;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <Field label="Exercise Name" name="exercise" placeholder="e.g. Bench Press" required />
+      {/* Exercise Name */}
+      <div>
+        <label className="block text-xs font-semibold text-gray-600 mb-1">
+          Exercise Name<span className="text-red-400 ml-0.5">*</span>
+        </label>
+        <input
+          type="text" value={form.exercise} onChange={e => set("exercise", e.target.value)}
+          placeholder="e.g. Bench Press" className={inputCls("exercise")} autoFocus
+        />
+        {errors.exercise && <p className="mt-1 text-xs text-red-500">{errors.exercise}</p>}
+      </div>
+
+      {/* Sets / Reps / Weight */}
       <div className="grid grid-cols-3 gap-3">
-        <Field label="Sets"       name="sets"   type="number" placeholder="3"  required />
-        <Field label="Reps"       name="reps"   type="number" placeholder="10" required />
-        <Field label="Weight (kg)" name="weight" type="number" placeholder="60" />
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1">
+            Sets<span className="text-red-400 ml-0.5">*</span>
+          </label>
+          <input
+            type="number" value={form.sets} onChange={e => set("sets", e.target.value)}
+            placeholder="3" className={inputCls("sets")}
+          />
+          {errors.sets && <p className="mt-1 text-xs text-red-500">{errors.sets}</p>}
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1">
+            Reps<span className="text-red-400 ml-0.5">*</span>
+          </label>
+          <input
+            type="number" value={form.reps} onChange={e => set("reps", e.target.value)}
+            placeholder="10" className={inputCls("reps")}
+          />
+          {errors.reps && <p className="mt-1 text-xs text-red-500">{errors.reps}</p>}
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1">Weight (kg)</label>
+          <input
+            type="number" value={form.weight} onChange={e => set("weight", e.target.value)}
+            placeholder="60" className={inputCls("weight")}
+          />
+          {errors.weight && <p className="mt-1 text-xs text-red-500">{errors.weight}</p>}
+        </div>
       </div>
       <div>
         <label className="block text-xs font-semibold text-gray-600 mb-1">
@@ -131,6 +157,7 @@ export default function WorkoutsPanel() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [error,         setError]         = useState("");
   const [search,        setSearch]        = useState("");
+  const [filterCategory,setFilterCategory]= useState("All");
   const [view,          setView]          = useState("table");
   const [showAdd,       setShowAdd]       = useState(false);
   const [editTarget,    setEditTarget]    = useState(null);
@@ -140,6 +167,11 @@ export default function WorkoutsPanel() {
     setLoading(true); setError("");
     try {
       const { data } = await axios.get(API, authHeaders());
+      // normalize backend field exerciseName → exercise
+      data.workouts = (data.workouts || []).map(w => ({
+        ...w,
+        exercise: w.exercise || w.exerciseName || "",
+      }));
       setWorkouts(Array.isArray(data) ? data : data.workouts || []);
     } catch (err) {
       setError(err?.response?.data?.message || "Failed to load workouts.");
@@ -152,6 +184,7 @@ export default function WorkoutsPanel() {
     setFormLoading(true);
     try {
       const { data } = await axios.post(API, form, authHeaders());
+      if (data.workout) data.workout.exercise = data.workout.exercise || data.workout.exerciseName || "";
       setWorkouts(p => [data.workout || data, ...p]);
       setShowAdd(false);
     } catch (err) { setError(err?.response?.data?.message || "Failed to add workout."); }
@@ -162,6 +195,7 @@ export default function WorkoutsPanel() {
     setFormLoading(true);
     try {
       const { data } = await axios.put(`${API}/${editTarget._id}`, form, authHeaders());
+      if (data.workout) data.workout.exercise = data.workout.exercise || data.workout.exerciseName || "";
       setWorkouts(p => p.map(w => w._id === editTarget._id ? (data.workout || data) : w));
       setEditTarget(null);
     } catch (err) { setError(err?.response?.data?.message || "Failed to update workout."); }
@@ -178,9 +212,11 @@ export default function WorkoutsPanel() {
     finally { setDeleteLoading(false); }
   };
 
-  const filtered = workouts.filter(w =>
-    w.exercise?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = workouts.filter(w => {
+    const matchSearch   = w.exercise?.toLowerCase().includes(search.toLowerCase());
+    const matchCategory = filterCategory === "All" || (w.category || "").toLowerCase() === filterCategory.toLowerCase();
+    return matchSearch && matchCategory;
+  });
 
   return (
     <div className="space-y-5">
@@ -267,6 +303,19 @@ export default function WorkoutsPanel() {
               </svg>
             </button>
           )}
+        </div>
+        {/* Category filter pills */}
+        <div className="flex gap-2 flex-wrap">
+          {["All", "Strength", "Cardio"].map(cat => (
+            <button key={cat} onClick={() => setFilterCategory(cat)}
+              className={`px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all ${
+                filterCategory === cat
+                  ? "bg-violet-600 text-white border-violet-600"
+                  : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
+              }`}>
+              {cat}
+            </button>
+          ))}
         </div>
         <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-xl p-1">
           {[
@@ -387,7 +436,7 @@ export default function WorkoutsPanel() {
       {!loading && filtered.length > 0 && (
         <p className="text-center text-xs text-gray-400">
           Showing {filtered.length} of {workouts.length} workout{workouts.length !== 1 ? "s" : ""}
-          {search && ` matching "${search}"`}
+          {search && ` matching "${search}"`}{filterCategory !== "All" && ` in ${filterCategory}`}
         </p>
       )}
     </div>

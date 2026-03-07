@@ -37,9 +37,20 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ── Routes ────────────────────────────────────────────────────────────────────
-const authRoutes = require("./routes/authRoutes");
-app.use("/api/auth", authRoutes);
-app.use("/api",      authRoutes);
+const authRoutes          = require("./routes/authRoutes");
+const workoutRoutes       = require("./routes/workoutRoutes");
+const nutritionRoutes     = require("./routes/nutritionRoutes");
+const progressRoutes      = require("./routes/progressRoutes");
+const notificationRoutes  = require("./routes/notificationRoutes");
+const chatRoutes          = require("./routes/chatRoute");
+
+app.use("/api/auth",          authRoutes);
+app.use("/api",               authRoutes);
+app.use("/api/workouts",      workoutRoutes);
+app.use("/api/nutrition",     nutritionRoutes);
+app.use("/api/progress",      progressRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/chat",          chatRoutes);
 
 // ── Health Check ──────────────────────────────────────────────────────────────
 app.get("/", (req, res) => {
