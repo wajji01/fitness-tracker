@@ -1,5 +1,5 @@
 import { useState, useEffect, Suspense, lazy } from "react";
-import { API_BASE, authHeaders } from "../../config/api";
+import { API_BASE, BACKEND_URL, authHeaders } from "../../config/api";
 import axios from "axios";
 import Sidebar          from "./components/Sidebar";
 import TopBar           from "./components/TopBar";
@@ -10,6 +10,8 @@ const WorkoutsPanel = lazy(() => import("./pages/WorkoutsPanel"));
 const Nutrition     = lazy(() => import("./pages/Nutrition"));
 const Progress      = lazy(() => import("./pages/Progress"));
 const Settings      = lazy(() => import("./pages/Settings"));
+const Reports       = lazy(() => import("./pages/Reports"));
+const Reminders     = lazy(() => import("./pages/Reminders"));
 
 function PageLoader() {
   return (
@@ -46,6 +48,33 @@ function ComingSoon({ page }) {
 export default function DashboardLayout() {
   const [activePage, setActivePage] = useState("dashboard");
   const [user,       setUser]       = useState(null);
+  const [theme,      setTheme]      = useState(() => localStorage.getItem("fittrack-theme") || "light");
+
+  // Apply theme on mount + whenever it changes
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else if (theme === "system") {
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      prefersDark ? root.classList.add("dark") : root.classList.remove("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+  }, [theme]);
+
+  // Listen for theme change from Settings page
+  useEffect(() => {
+    const handler = (e) => {
+      const newTheme = e.detail?.theme;
+      if (newTheme) {
+        setTheme(newTheme);
+        localStorage.setItem("fittrack-theme", newTheme);
+      }
+    };
+    window.addEventListener("fittrack-theme-change", handler);
+    return () => window.removeEventListener("fittrack-theme-change", handler);
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -66,12 +95,14 @@ export default function DashboardLayout() {
       case "nutrition": return <Suspense fallback={<PageLoader />}><Nutrition /></Suspense>;
       case "progress":  return <Suspense fallback={<PageLoader />}><Progress /></Suspense>;
       case "settings":  return <Suspense fallback={<PageLoader />}><Settings /></Suspense>;
+      case "reports":   return <Suspense fallback={<PageLoader />}><Reports /></Suspense>;
+      case "reminders": return <Suspense fallback={<PageLoader />}><Reminders /></Suspense>;
       default:          return <DashboardHome onGoToWorkouts={() => setActivePage("workouts")} />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans antialiased flex">
+    <div className="min-h-screen font-sans antialiased flex" style={{ backgroundColor: "var(--bg-base)", color: "var(--text-primary)", transition: "background-color 0.25s ease" }}>
       <Sidebar activePage={activePage} setActivePage={setActivePage} user={user} />
       <main className="flex-1 lg:ml-60 min-h-screen flex flex-col">
         <TopBar activePage={activePage} user={user} setActivePage={setActivePage} />

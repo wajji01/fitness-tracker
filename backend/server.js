@@ -12,6 +12,9 @@ if (!process.env.JWT_SECRET) {
 const connectDB = require("./config/db");
 connectDB();
 
+const { startReminderCron } = require("./cron/reminderCron");
+startReminderCron();
+
 const app = express();
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
@@ -43,6 +46,9 @@ const nutritionRoutes     = require("./routes/nutritionRoutes");
 const progressRoutes      = require("./routes/progressRoutes");
 const notificationRoutes  = require("./routes/notificationRoutes");
 const chatRoutes          = require("./routes/chatRoute");
+const reportsRoutes       = require("./routes/reportsRoute");
+const reminderRoutes      = require("./routes/reminderRoutes");
+const settingsRoutes      = require("./routes/settingsRoutes");
 
 app.use("/api/auth",          authRoutes);
 app.use("/api",               authRoutes);
@@ -51,6 +57,9 @@ app.use("/api/nutrition",     nutritionRoutes);
 app.use("/api/progress",      progressRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/chat",          chatRoutes);
+app.use("/api/reports",       reportsRoutes);
+app.use("/api/reminders",     reminderRoutes);
+app.use("/api/settings",      settingsRoutes);
 
 // ── Health Check ──────────────────────────────────────────────────────────────
 app.get("/", (req, res) => {
